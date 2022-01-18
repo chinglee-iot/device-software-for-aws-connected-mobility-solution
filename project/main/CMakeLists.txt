@@ -5,6 +5,7 @@ set( COMPONENT_SRCS
     "./main.c"
     "../sdCard/sdCard.c"
     "../appOBD/source/obd_main.c"
+    "../appOBD/source/obd_mqtt_interface.c"
     "../appOBD/source/simulated_route.c"
     "$ENV{IDF_PATH}/examples/common_components/protocol_examples_common/connect.c"
 )

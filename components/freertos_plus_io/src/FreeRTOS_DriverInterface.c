@@ -40,13 +40,17 @@ extern Peripheral_device_t gBuzzDevice;
 /* Define the secure information. */
 extern Peripheral_device_t gSecureDevice;
 
+/* Define the explink device. */
+extern Peripheral_device_t gExplinkDevice;
+
 /*-----------------------------------------------------------*/
 
 static Peripheral_device_t * pPeripheralDevices[] =
 {
     &gObdDevice,
     &gBuzzDevice,
-    &gSecureDevice
+    &gSecureDevice,
+    &gExplinkDevice
 };
 
 /*-----------------------------------------------------------*/

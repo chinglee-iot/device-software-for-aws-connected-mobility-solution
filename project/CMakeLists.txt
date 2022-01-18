@@ -13,6 +13,7 @@ set( EXTRA_COMPONENT_DIRS
         ${DRIVERS_PATH}/buzzer
         ${DRIVERS_PATH}/gps
         ${DRIVERS_PATH}/obd
+        ${DRIVERS_PATH}/explink
 )
 
 include( $ENV{IDF_PATH}/tools/cmake/project.cmake )
@@ -20,7 +21,7 @@ project( cms_demo )
 
 # Credential files
 if( NOT CREDENTIAL_FOLDER )
-    set( CREDENTIAL_FOLDER credentials )
+    set( CREDENTIAL_FOLDER credential_demo )
     message( WARNING "CREDENTIAL_FOLDER is not set, use ${CREDENTIAL_FOLDER}" )
 endif()
 target_add_binary_data(${CMAKE_PROJECT_NAME}.elf "${CREDENTIAL_FOLDER}/root_cert_auth.pem" TEXT)

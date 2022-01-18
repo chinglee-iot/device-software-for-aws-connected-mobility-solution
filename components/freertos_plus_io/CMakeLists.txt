@@ -13,6 +13,7 @@ list(APPEND srcs
     "${FREERTOS_PLUS_IO_SOURCE}/buzz_device.c"
     "${FREERTOS_PLUS_IO_SOURCE}/obd_device.c"
     "${FREERTOS_PLUS_IO_SOURCE}/secure_device.c"
+    "${FREERTOS_PLUS_IO_SOURCE}/explink_device.c"
 )
 
 list(APPEND includes

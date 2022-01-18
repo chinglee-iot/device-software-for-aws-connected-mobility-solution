@@ -40,8 +40,9 @@
 #include "task.h"
 #include "FreeRTOS_IO.h"
 
+#include "explink_library.h"
+
 #include "core_mqtt_agent.h"
-#include "buzz_library.h"
 #include "cms_log.h"
 
 /*-----------------------------------------------------------*/
@@ -74,7 +75,6 @@ extern MQTTAgentContext_t xGlobalMqttAgentContext;
 
 extern void sd_card_init(void);
 
-static uint8_t * downloadAgentBuffer = NULL;
 static char rtspStreamingUrl[ MAX_RTSP_STREAMING_URL ] = CONFIG_RTSP_STREAMING_URL;
 
 extern void startMqttAgentTask( void );
@@ -246,7 +246,37 @@ void app_main()
         CMS_LOGI( TAG, "Waiting for MQTT to connect." );
         vTaskDelay( pdMS_TO_TICKS(1000) );
     }
+    
+    #if 0
+        echo_task();
+    #else
+    
+    char testBuffer[ 128 ];
+    
+    /* Initialize Expresslink commnunication interface. */
+    Explink_Init();
+    
+    /* Wait device ready. */
+    while( true )
+    {
+        Explink_SendLine( "AT\n", 3 );
+        Explink_ReadLine( testBuffer, 128 );
+        break;
+    }
 
+    /* Configure the WIFI credential. */
+        /* Setup wifi. */
+    Explink_SendCommand( "AT+CONF SSID=Guest", 0 );
+    Explink_SendCommand( "AT+CONF Passphrase=BrokenWires@@2019", 0 );
+    Explink_SendCommand( "AT+CONF TopicRoot=dt", 0 );
+    Explink_SendCommand( "AT+CONF Endpoint=a2jl9ndedgotsf-ats.iot.us-west-2.amazonaws.com", 0 );
+
+    /* Connect to IoT core. */
+    ExplinkResponseCode_t errCode = EL_OK;
+    while( ( errCode = Explink_SendCommand( "AT+CONNECT", 0 ) ) != EL_OK )
+    {
+    }
+    
     // Create vehicle telemetry report app
     xTaskCreate( (TaskFunction_t) vehicleTelemetryReportTask,
                  "vehicleTelemetryReportTask",
@@ -255,6 +285,7 @@ void app_main()
                  tskIDLE_PRIORITY+1,
                  NULL
                 );
+    #endif
 }
 
 /*-----------------------------------------------------------*/

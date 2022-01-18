@@ -29,10 +29,6 @@
 #include "task.h"
 #include "semphr.h"
 
-#include "core_mqtt.h"
-#include "core_mqtt_agent.h"
-#include "core_mqtt_agent_tasks.h"
-
 #include "obd_data.h"
 #include "FreeRTOS_IO.h"
 
@@ -70,7 +66,7 @@
     #define OBD_TELEMETRY_TYPE_OIL_TEMP_PID     PID_ENGINE_OIL_TEMP
 #endif
 
-#define OBD_MQTT_QOS                            MQTTQoS1
+#define OBD_MQTT_QOS                            1
 
 /*-----------------------------------------------------------*/
 
@@ -103,7 +99,7 @@ static obdContext_t gObdContext =
     .obdDeviceConnected          = false
 };
 
-static const char OBD_DATA_TRIP_TOPIC[] = "dt/cvra/%s/trip";
+static const char OBD_DATA_TRIP_TOPIC[] = "cvra/%s/trip";
 static const char OBD_DATA_TRIP_FORMAT_1[] =
 "{ \r\n\
     \"MessageId\": \"%s\", \r\n\
@@ -138,7 +134,7 @@ static const char OBD_DATA_TRIP_FORMAT_5[] =
     } \r\n\
 }";
 
-static const char OBD_DATA_TELEMETRY_TOPIC[] = "dt/cvra/%s/cardata";
+static const char OBD_DATA_TELEMETRY_TOPIC[] = "cvra/%s/cardata";
 /* The value field is vary from the field. Use strcat to cat the string. */
 static const char OBD_DATA_TELEMETRY_FORMAT_1[] =
 "{ \r\n\
@@ -229,7 +225,7 @@ static const char OBD_DATA_TELEMETRY_FORMAT_8[] =
 "    \"IgnitionStatus\": \"%s\" \r\n\
 }";
 
-static const char OBD_DATA_DTC_TOPIC[] = "dt/cvra/%s/dtc";
+static const char OBD_DATA_DTC_TOPIC[] = "cvra/%s/dtc";
 static const char OBD_DATA_DTC_FORMAT[] =
 "{ \r\n\
     \"MessageId\": \"%s\", \r\n\
@@ -242,7 +238,7 @@ static const char OBD_DATA_DTC_FORMAT[] =
     } \r\n\
 }";
 
-static const char OBD_MAINTENANCE_TOPIC[] = "dt/cvra/%s/maintenance";
+static const char OBD_MAINTENANCE_TOPIC[] = "cvra/%s/maintenance";
 static const char OBD_MAINTENANCE_FORMAT[] =
 "{ \r\n\
     \"MessageId\": \"%s\", \r\n\
@@ -260,6 +256,8 @@ static const char OBD_MAINTENANCE_FORMAT[] =
 
 extern UBaseType_t uxRand( void );
 extern void udpateSimulatedGPSData( obdContext_t * pObdContext );
+extern BaseType_t OBD_MqttPublish( uint8_t mqttQos, char * topciBuf, uint32_t topicLen,
+    char * messageBuf, uint32_t messageLen );
 
 /*-----------------------------------------------------------*/
 
@@ -776,7 +774,7 @@ static BaseType_t checkObdDtcData( obdContext_t * pObdContext )
                   "true"                    // changed alwasy true
                   );
 
-        retMqtt = mqttAgentPublish( OBD_MQTT_QOS,
+        retMqtt = OBD_MqttPublish( OBD_MQTT_QOS,
                                     pObdContext->topicBuf,
                                     strlen( pObdContext->topicBuf ),
                                     pObdContext->messageBuf,
@@ -885,7 +883,7 @@ static BaseType_t sendObdTelemetryData( obdContext_t * pObdContext )
             pObdContext->ignition_status                  // IgnitionStatus
     );
 
-    retMqtt = mqttAgentPublish( OBD_MQTT_QOS,
+    retMqtt = OBD_MqttPublish( OBD_MQTT_QOS,
                                 pObdContext->topicBuf,
                                 strlen( pObdContext->topicBuf ),
                                 pObdContext->messageBuf,
@@ -941,7 +939,7 @@ static BaseType_t sendObdTripData( obdContext_t * pObdContext )
               0.0                           // SpeedProfiler
               );
 
-    retMqtt = mqttAgentPublish( OBD_MQTT_QOS,
+    retMqtt = OBD_MqttPublish( OBD_MQTT_QOS,
                                 pObdContext->topicBuf,
                                 strlen( pObdContext->topicBuf ),
                                 pObdContext->messageBuf,
@@ -972,7 +970,7 @@ static BaseType_t resetCarError( obdContext_t * pObdContext )
               "A:OilTemp"               // Val
     );
 
-    retMqtt = mqttAgentPublish( OBD_MQTT_QOS,
+    retMqtt = OBD_MqttPublish( OBD_MQTT_QOS,
                                 pObdContext->topicBuf,
                                 strlen( pObdContext->topicBuf ),
                                 pObdContext->messageBuf,
@@ -991,7 +989,7 @@ static BaseType_t resetCarError( obdContext_t * pObdContext )
                   ""                        // Val
         );
 
-        retMqtt = mqttAgentPublish( OBD_MQTT_QOS,
+        retMqtt = OBD_MqttPublish( OBD_MQTT_QOS,
                                     pObdContext->topicBuf,
                                     strlen( pObdContext->topicBuf ),
                                     pObdContext->messageBuf,
