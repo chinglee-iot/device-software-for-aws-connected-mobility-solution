@@ -57,4 +57,6 @@
 #define BUZZ_SHORT_BEEP_DURATION_MS             ( 250 )
 #define BUZZ_LONG_BEEP_DURATION_MS              ( 1000 )
 
+#define OBD_ROOT_TOPIC                          "dt"
+
 #endif /* OBD_CONFIG_H */

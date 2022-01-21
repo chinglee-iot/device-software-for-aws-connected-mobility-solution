@@ -39,7 +39,9 @@
 
 #define BUF_SIZE ( 1024 )
 
-#define DEFAULT_READ_TIMEOUT_MS    ( 1000 )
+#define DEFAULT_READ_TIMEOUT_MS     ( 1000 )
+#define DEFAULT_READ_RETRY_COUNT    ( 10 )
+#define DEFAULT_POWER_ON_DELAY_MS   ( 3000 )
 
 typedef struct explinkDeviceContext
 {
@@ -91,7 +93,6 @@ static Peripheral_Descriptor_t Explink_Open( const int8_t * pcPath,
     ( void ) pcPath;
     ( void ) ulFlags;
 
-#ifdef CONFIG_FREEMATICS_ONEPLUS_B
     // Setup 5V output to driver ESP32
     gpio_config_t io_conf;
     // Disable interrupt
@@ -109,7 +110,9 @@ static Peripheral_Descriptor_t Explink_Open( const int8_t * pcPath,
     
     gpio_set_direction( GPIO_NUM_12, GPIO_MODE_OUTPUT );
     gpio_set_level( GPIO_NUM_12, 1 );
-#endif
+
+    /* Proper delay after power on. */
+    vTaskDelay( pdMS_TO_TICKS( DEFAULT_POWER_ON_DELAY_MS ) );
 
 #if CONFIG_UART_ISR_IN_IRAM
     intr_alloc_flags = ESP_INTR_FLAG_IRAM;
@@ -173,6 +176,7 @@ static size_t Explink_Read( Peripheral_Descriptor_t const pxPeripheral,
     char * const readBuffer = ( char * const ) pvBuffer;
     uint32_t readBufferLen = xBytes;
     uint32_t bufferIndex = 0U;
+    uint32_t retryCount = 0U;
     int len = 0;
 
     if( pDevice == NULL )
@@ -189,18 +193,40 @@ static size_t Explink_Read( Peripheral_Descriptor_t const pxPeripheral,
     {
         for( bufferIndex = 0U; bufferIndex < readBufferLen; bufferIndex++ )
         {
-            len = uart_read_bytes( ECHO_UART_PORT_NUM, 
-                                   &readBuffer[bufferIndex],
-                                   1,
-                                   pdMS_TO_TICKS( DEFAULT_READ_TIMEOUT_MS ) );
+            /* The retry is only required for the first byte. */
+            if( bufferIndex == 0 )
+            {
+                for( retryCount = 0; retryCount < DEFAULT_READ_RETRY_COUNT; retryCount++ )
+                {
+                    len = uart_read_bytes( ECHO_UART_PORT_NUM, 
+                                           &readBuffer[bufferIndex],
+                                           1,
+                                           pdMS_TO_TICKS( DEFAULT_READ_TIMEOUT_MS ) );
+                    if( len > 0 ) break;
+                }
+            }
+            else
+            {
+                len = uart_read_bytes( ECHO_UART_PORT_NUM, 
+                       &readBuffer[bufferIndex],
+                       1,
+                       pdMS_TO_TICKS( DEFAULT_READ_TIMEOUT_MS ) );
+            }
 
             if( ( len > 0 ) && ( readBuffer[ bufferIndex ] == '\n' ) )
             {
-                /* TODO : fix potential buffer overflow. */
-                readBuffer[ bufferIndex + 1 ] = '\0';
+                if( ( xBytes - 1 ) > bufferIndex )
+                {
+                    readBuffer[ bufferIndex + 1 ] = '\0';
+                }
                 printf( "Received %s\r\n", readBuffer );
                 break;
             }
+            else if( len <= 0 )
+            {
+                break;
+            }
+
         }
         retSize = bufferIndex;
     }

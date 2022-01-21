@@ -41,6 +41,7 @@
 
 #include "../include/obd_context.h"
 #include "../include/obd_config.h"
+#include "../include/obd_mqtt_interface.h"
 
 // log print header
 #include "cms_log.h"
@@ -1009,6 +1010,9 @@ void vehicleTelemetryReportTask( void )
     double vehicleSpeed = 0;
     double gpsSpeed = 0;
     bool useSimulatledGPSData = false;
+    
+    /* Initialize the MQTT interface. */
+    OBD_MqttInit();
 
     gObdContext.buzzDevice = FreeRTOS_open( ( int8_t * )( "/dev/buzz" ), 0 );
 

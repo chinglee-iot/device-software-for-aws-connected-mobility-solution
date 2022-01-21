@@ -150,4 +150,10 @@ config CMS_VIN
     help
         This is the VIN for demo car
 
+config OBD_USE_EXPRESS_LINK
+    bool "OBD uses express link"
+    default y
+    help
+        The OBD application MQTT interface
+
 endmenu
