@@ -337,10 +337,10 @@ static void covertTicksToTimeFormat( uint64_t ticksMs,
     remainMs = ( temp <= UINT32_MAX ) ? ( uint32_t ) temp : 0;
 
     snprintf( pTime, bufferLength, "%04u-%02u-%02uT%02u:%02u:%02u.%04uZ",
-              ( uint32_t ) 1970,
-              ( uint32_t ) 1,
-              ( uint32_t ) ( days + 1 ),
-              ( uint32_t ) hours,
+              ( uint32_t ) OBD_UPTIME_START_YEAR,
+              ( uint32_t ) OBD_UPTIME_START_MONTH,
+              ( uint32_t ) OBD_UPTIME_START_DAY + ( days + 1 ),
+              ( uint32_t ) hours + 2,
               ( uint32_t ) minutes,
               ( uint32_t ) seconds,
               ( uint32_t ) remainMs );
@@ -1134,6 +1134,7 @@ void vehicleTelemetryReportTask( void )
                         gObdContext.startLatitude = 0;
                         gObdContext.startLongitude = 0;
                         gObdContext.startDirection = 0;
+                        updateGPSData( &gObdContext, useSimulatledGPSData );
                     }
 
                     CMS_LOGD( TAG, "Vehicle speed %lf gps speed %lf for ignition.", vehicleSpeed, gpsSpeed );

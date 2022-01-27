@@ -37,7 +37,7 @@
 #define ECHO_UART_PORT_NUM      ( UART_NUM_1 )
 #define ECHO_UART_BAUD_RATE     ( 115200 )
 
-#define BUF_SIZE ( 1024 )
+#define BUF_SIZE ( 2048 )
 
 #define DEFAULT_READ_TIMEOUT_MS     ( 1000 )
 #define DEFAULT_READ_RETRY_COUNT    ( 10 )

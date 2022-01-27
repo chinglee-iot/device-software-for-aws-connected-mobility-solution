@@ -29,7 +29,7 @@
 #define CAR_GAS_TANK_SIZE                      ( 50.0 )      /* Litres. */
 #define CAR_HIGH_SPEED_THRESHOLD               ( 120.0 )     /* KM/hr. */
 #define CAR_IDLE_SPEED_THRESHOLD               ( 1.0 )       /* KM/hr. */
-#define CAR_IGINITION_IDLE_OFF_MS              ( 30 * 1000 ) /* Idle interval time to trigger iginition off. */
+#define CAR_IGINITION_IDLE_OFF_MS              ( 10 * 1000 ) /* Idle interval time to trigger iginition off. */
 #define CAR_ACCELARATOR_PADEL_RPM_THRESHOLD    ( 6000.0 )
 
 #define CAR_HIGH_OIL_TEMP_RPM                  ( 8000 )
@@ -58,5 +58,9 @@
 #define BUZZ_LONG_BEEP_DURATION_MS              ( 1000 )
 
 #define OBD_ROOT_TOPIC                          "dt"
+
+#define OBD_UPTIME_START_YEAR                   ( 2022 )
+#define OBD_UPTIME_START_MONTH                  ( 1 )
+#define OBD_UPTIME_START_DAY                    ( 27 )
 
 #endif /* OBD_CONFIG_H */

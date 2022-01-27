@@ -56,53 +56,75 @@ BaseType_t OBD_MqttPublish( uint8_t mqttQos, char * topicBuf, uint32_t topicLen,
     uint32_t sendIndex = 0;
     uint32_t i = 0;
     ExplinkResponseCode_t errCode = 0;
-    
-    Explink_SendCommand( "AT+CONNECT", 0 );
-    
-    /* Fix escaping. */
-    sendIndex = snprintf( tempBuffer, TEMP_BUFFER_SIZE, "AT+CONF Topic1=" );
-    for( i = 0; i < topicLen; i++ )
-    {
-        if( topicBuf[ i ] == '\\' )
-        {
-            tempBuffer[ sendIndex++ ] = '\\';
-            tempBuffer[ sendIndex++ ] = '\\';
-        }
-        else
-        {
-            tempBuffer[ sendIndex++ ] = topicBuf[ i ];
-        }
-    }
-    
-    /* Setup the topic. */
-    Explink_SendCommand( tempBuffer, 0 );
-    
-    /* Fix escaping. */
-    for( i = 0; i < messageLen; i++ )
-    {
-        if( messageBuf[ i ] == '\r' )
-        {
-            messageBuf[ i ] = ' ';
-        }
-        if( messageBuf[ i ] == '\n' )
-        {
-            messageBuf[ i ] = ' ';
-        }
-        else if( messageBuf[ i ] == '\\' )
-        {
-            messageBuf[ i ]  = ' ';
-        }
-    }
 
-    /* Send the message. */
-    printf( "%d ===> AT+SEND1 %s\r\n", messageLen, messageBuf );
-    Explink_SendBuffer( "AT+SEND1 ", strlen( "AT+SEND1 " ) );
-    Explink_SendLine( messageBuf, messageLen );
-
+    /* Query connection status. */
+    printf( "12 ===> AT+CONNECT?\r\n" );
+    Explink_SendLine( "AT+CONNECT?", 0 );
     retRead = Explink_ReadLine( tempBuffer, TEMP_BUFFER_SIZE );
-    errCode = Explink_CheckResponse( tempBuffer, retRead );
     printf( "%d <=== %s\r\n", retRead, tempBuffer );
-    printf( "Error code %d\r\n", errCode );
+    errCode = Explink_CheckResponse( tempBuffer, retRead );
+    if( ( errCode == 0 ) && ( tempBuffer[3] == '0' ) )
+    {
+        errCode = Explink_SendCommand( "AT+CONNECT", 0 );
+    }
+    
+    /* Send the topic. */
+    if( errCode == 0 )
+    {
+        /* Fix escaping. */
+        sendIndex = snprintf( tempBuffer, TEMP_BUFFER_SIZE, "AT+CONF Topic1=" );
+        for( i = 0; i < topicLen; i++ )
+        {
+            if( topicBuf[ i ] == '\\' )
+            {
+                tempBuffer[ sendIndex++ ] = '\\';
+                tempBuffer[ sendIndex++ ] = '\\';
+            }
+            else
+            {
+                tempBuffer[ sendIndex++ ] = topicBuf[ i ];
+            }
+        }
+        
+        /* Setup the topic. */
+        errCode = Explink_SendCommand( tempBuffer, 0 );
+    }
+    
+    if( errCode == 0 )
+    {
+        /* Fix escaping. */
+        for( i = 0; i < messageLen; i++ )
+        {
+            if( messageBuf[ i ] == '\r' )
+            {
+                messageBuf[ i ] = ' ';
+            }
+            if( messageBuf[ i ] == '\n' )
+            {
+                messageBuf[ i ] = ' ';
+            }
+            else if( messageBuf[ i ] == '\\' )
+            {
+                messageBuf[ i ]  = ' ';
+            }
+        }
+
+        /* Send the message. */
+        printf( "%d ===> AT+SEND1 %s\r\n", messageLen, messageBuf );
+        Explink_SendBuffer( "AT+SEND1 ", strlen( "AT+SEND1 " ) );
+        Explink_SendLine( messageBuf, messageLen );
+
+        memset( tempBuffer, 0, TEMP_BUFFER_SIZE );
+        retRead = Explink_ReadLine( tempBuffer, TEMP_BUFFER_SIZE );
+        errCode = Explink_CheckResponse( tempBuffer, retRead );
+        printf( "%d <=== %s\r\n", retRead, tempBuffer );
+        printf( "Error code %d\r\n", errCode );
+    }
+    
+    if( errCode != 0 )
+    {
+        retMqtt = pdFAIL;
+    }
     
     return retMqtt;
 }

@@ -80,11 +80,17 @@ int Explink_SendBuffer( char * sendBuffer, uint32_t sendBufferLen )
 int Explink_SendLine( char * sendBuffer, uint32_t sendBufferLen )
 {
     int retSendLine = 0;
+    uint32_t cmdLineLength = sendBufferLen;
+    
+    if( cmdLineLength == 0 )
+    {
+        cmdLineLength = strlen( sendBuffer );
+    }
 
     if( sExplinkDesc != NULL )
     {
-        retSendLine = FreeRTOS_write( sExplinkDesc, sendBuffer, sendBufferLen );
-        if( sendBuffer[ sendBufferLen - 1 ] != '\n' )
+        retSendLine = FreeRTOS_write( sExplinkDesc, sendBuffer, cmdLineLength );
+        if( sendBuffer[ cmdLineLength - 1 ] != '\n' )
         {
             retSendLine = retSendLine + FreeRTOS_write( sExplinkDesc, "\n", 1 );
         }
@@ -109,12 +115,6 @@ ExplinkResponseCode_t Explink_SendCommand( char * cmdBuffer, uint32_t cmdBufferL
     char respBuffer[ 128 ] = { 0 };
     int sendLineLength = cmdBufferLen;
     ExplinkResponseCode_t errCode = 0;
-
-    /* TODO : Remove this workaround. */
-    if( sendLineLength == 0 )
-    {
-        sendLineLength = strlen( cmdBuffer );
-    }
 
     retSend = Explink_SendLine( cmdBuffer, sendLineLength );
 

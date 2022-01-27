@@ -161,7 +161,7 @@ static void Obd_Reset( void )
 
 static bool get_UTCTime( char *pBuffer, uint32_t bufferLength )
 {
-    static bool retGetUtcTime = true;
+    static bool retGetUtcTime = false;
     time_t now = 0;
     struct tm timeinfo = { 0 };
 
